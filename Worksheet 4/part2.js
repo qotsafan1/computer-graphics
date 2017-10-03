@@ -21,7 +21,6 @@ var bottom = -3.0;
 
 var numTimesToSubdivide = 3;
 var index = 0;
-
 var pointsArray = [];
 var normalsArray = [];
 
@@ -85,6 +84,8 @@ window.onload = function init()
     gl.clearColor( 1.0, 1.0, 1.0, 1.0 );
 
     gl.enable(gl.DEPTH_TEST);
+    gl.enable(gl.CULL_FACE);
+    gl.cullFace(gl.FRONT);
 
     var program = initShaders( gl, "vertex-shader", "fragment-shader" );
     gl.useProgram( program );
@@ -99,6 +100,24 @@ window.onload = function init()
     var vPosition = gl.getAttribLocation( program, "vPosition" );
     gl.vertexAttribPointer( vPosition, 4, gl.FLOAT, false, 0, 0 );
     gl.enableVertexAttribArray( vPosition );
+
+    var colorArray = [];
+    for (var i = 0; i < pointsArray.length; i++) {
+        colorArray.push(vec4(
+          pointsArray[i][0]*0.5+0.5,
+          pointsArray[i][1]*0.5+0.5,
+          pointsArray[i][2]*0.5+0.5,
+          1.0
+        ));
+    }
+
+    var colorBuffer = gl.createBuffer();
+    gl.bindBuffer( gl.ARRAY_BUFFER, colorBuffer );
+    gl.bufferData( gl.ARRAY_BUFFER, flatten(colorArray), gl.STATIC_DRAW );
+
+    var vColor = gl.getAttribLocation( program, "vColor" );
+    gl.vertexAttribPointer( vColor, 4, gl.FLOAT, false, 0, 0 );
+    gl.enableVertexAttribArray( vColor );
 
     document.getElementById("increaseSubdivision").onclick = function(){
         numTimesToSubdivide++;
