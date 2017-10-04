@@ -3,31 +3,19 @@ var gl;
 var modelViewMatrixLoc;
 var projectionMatrixLoc;
 
-var eye;
+var eye = vec3(0.0, 0.0, 3.5);
 var at = vec3(0.0, 0.0, 0.0);
 var up = vec3(0.0, 1.0, 0.0);
-
-var near = -10;
-var far = 10;
-var radius = 1.5;
-var theta  = 0.0;
-var phi    = 0.0;
-var dr = 5.0 * Math.PI/180.0;
-
-var left = -3.0;
-var right = 3.0;
-var ytop =3.0;
-var bottom = -3.0;
 
 var numTimesToSubdivide = 3;
 var index = 0;
 var pointsArray = [];
 var normalsArray = [];
 
-var va = vec4(0.0, 0.0, -1.0, 1);
-var vb = vec4(0.0, 0.942809, 0.333333, 1);
-var vc = vec4(-0.816497, -0.471405, 0.333333, 1);
-var vd = vec4(0.816497, -0.471405, 0.333333,1);
+var va = vec4(0.0, 0.0, 1.0, 1);
+var vb = vec4(0.0, 0.942809, -0.333333, 1);
+var vc = vec4(-0.816497, -0.471405, -0.333333, 1);
+var vd = vec4(0.816497, -0.471405, -0.333333, 1);
 
 var points = [];
 
@@ -85,7 +73,6 @@ window.onload = function init()
 
     gl.enable(gl.DEPTH_TEST);
     gl.enable(gl.CULL_FACE);
-    gl.cullFace(gl.FRONT);
 
     var program = initShaders( gl, "vertex-shader", "fragment-shader" );
     gl.useProgram( program );
@@ -141,11 +128,10 @@ function render()
 {
     gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    var projectionMatrix = ortho(left, right, bottom, ytop, near, far);
-    gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix));
+    var aspect = canvas.width/canvas.height;
 
-    eye = vec3(radius*Math.sin(theta)*Math.cos(phi),
-        radius*Math.sin(theta)*Math.sin(phi), radius*Math.cos(theta));
+    var projectionMatrix = perspective(45.0, aspect, 0.1, 10.0);
+    gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix));
 
     var modelViewMatrix = lookAt( eye, at, up ) ;
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));

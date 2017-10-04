@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+		<title>Worksheet 4 - Part 3</title>
+
+		<script type="text/javascript" src="Common/webgl-utils.js"></script>
+		<script type="text/javascript" src="Common/initShaders.js"></script>
+		<script type="text/javascript" src="Common/MV.js"></script>
+		<script type="text/javascript" src="part3.js"></script>
+
+		<script id="vertex-shader" type="x-shader/x-vertex">
+			attribute vec4 vPosition;
+			attribute vec4 vColor;
+			attribute vec4 vNormal;
+
+			varying vec4 fColor;
+
+			uniform mat4 modelViewMatrix;
+			uniform mat4 projectionMatrix;
+			uniform vec4 lightPosition;
+			uniform vec4 lightEmission;
+
+			void main() {
+					vec3 L = normalize((modelViewMatrix*lightPosition).xyz);
+					vec3 N = normalize(vNormal.xyz);
+
+					float ln = max(-dot(L, N), 0.0);
+					vec4 diffuse = ln * lightEmission;
+
+					gl_Position = projectionMatrix * modelViewMatrix * vPosition;
+					fColor = diffuse * vColor;
+					fColor.a = 1.0;
+			}
+		</script>
+
+		<script id="fragment-shader" type="x-shader/x-fragment">
+			precision mediump float;
+
+			varying vec4 fColor;
+
+			void main() {
+			  gl_FragColor = fColor;
+			}
+		</script>
+	</head>
+
+	<body>
+		<button id="increaseSubdivision">Increase Subdivisions</button>
+		<button id="decreaseSubdivison">Decrease Subdivisions</button>
+		<br>
+		<canvas id="webgl" width="512" height="512">
+			Oops ... your browser doesn't support the HTML5 canvas element
+		</canvas>
+	</body>
+</html>
