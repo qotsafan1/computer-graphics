@@ -59,12 +59,6 @@ function tetrahedron(a, b, c, d, n) {
     divideTriangle(a, c, d, n);
 }
 
-function addPoints() {
-  for (var i = 0; i<indices.length; i++) {
-      points.push(vec4(vertices[indices[i]]));
-  }
-}
-
 window.onload = function init()
 {
     canvas = document.getElementById( "webgl" );
@@ -156,7 +150,7 @@ function render()
 
     // Rotate
     var t = Date.now()
-    var rotation = radians(t * 0.125 % 360)
+    var rotation = radians(t * 0.05 % 360)
     var radius = 3.5;
 
     eye = vec3(radius * Math.sin(rotation), 0.0, radius * Math.cos(rotation));

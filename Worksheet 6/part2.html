@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+		<title>Worksheet 6 - Part 2</title>
+
+		<script type="text/javascript" src="Common/webgl-utils.js"></script>
+		<script type="text/javascript" src="Common/initShaders.js"></script>
+		<script type="text/javascript" src="Common/MV.js"></script>
+		<script type="text/javascript" src="part2.js"></script>
+
+		<script id="vertex-shader" type="x-shader/x-vertex">
+				attribute vec4 vPosition;
+				uniform mat4 mvpMatrix;
+				attribute vec2 vTexCoord;
+				varying vec2 fTexCoord;
+
+				void main()
+				{
+						fTexCoord = vTexCoord;
+						gl_Position = mvpMatrix*vPosition;
+				}
+		</script>
+
+		<script id="fragment-shader" type="x-shader/x-fragment">
+				precision mediump float;
+				varying vec2 fTexCoord;
+				uniform sampler2D texMap;
+
+				void main()
+				{
+						gl_FragColor = texture2D(texMap, fTexCoord);
+				}
+		</script>
+	</head>
+
+	<body>
+		<canvas id="webgl" width="512" height="512">
+			Oops ... your browser doesn't support the HTML5 canvas element
+		</canvas>
+		<div>
+			<span>Wrapping mode: </span>
+			<select id="wrapping" size="2">
+				<option value="repeat" selected>Repeat Texture</option>
+				<option value="clamp">Clamp-to-edge</option>
+			</select>
+		</div>
+		<br>
+		<div>
+			<span>Magnification filtering: </span>
+			<select id="magnification" size="2">
+				<option value="nearest" selected>Nearest</option>
+				<option value="linear">Linear</option>
+			</select>
+		</div>
+		<br>
+		<div>
+			<span>Minification filtering: </span>
+			<select id="minification" size="6">
+				<option value="nearest" selected>Nearest</option>
+				<option value="linear">Linear</option>
+				<option value="nmn">NEAREST_MIPMAP_NEAREST</option>
+				<option value="nml">NEAREST_MIPMAP_LINEAR</option>
+				<option value="lmn">LINEAR_MIPMAP_NEAREST</option>
+				<option value="lml">LINEAR_MIPMAP_LINEAR</option>
+			</select>
+		</div>
+	</body>
+</html>

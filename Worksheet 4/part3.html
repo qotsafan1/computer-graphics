@@ -23,9 +23,9 @@
 
 			void main() {
 					vec3 L = normalize((modelViewMatrix*lightPosition).xyz);
-					vec3 N = normalize(vNormal.xyz);
+					vec3 N = normalize((modelViewMatrix*vNormal).xyz);
 
-					float ln = max(-dot(L, N), 0.0);
+					float ln = max(dot(N,-L), 0.0);
 					vec4 diffuse = ln * lightEmission;
 
 					gl_Position = projectionMatrix * modelViewMatrix * vPosition;
