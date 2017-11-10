@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+		<title>Worksheet 6 - Part 3</title>
+
+		<script type="text/javascript" src="Common/webgl-utils.js"></script>
+		<script type="text/javascript" src="Common/initShaders.js"></script>
+		<script type="text/javascript" src="Common/MV.js"></script>
+		<script type="text/javascript" src="part3.js"></script>
+
+		<script id="vertex-shader" type="x-shader/x-vertex">
+			attribute vec4 vPosition;
+
+			uniform mat4 modelViewMatrix;
+			uniform mat4 projectionMatrix;
+			varying vec3 normal;
+
+			void main() {
+					gl_Position = projectionMatrix * modelViewMatrix * vPosition;
+					normal = vPosition.xyz;
+			}
+		</script>
+
+		<script id="fragment-shader" type="x-shader/x-fragment">
+			precision mediump float;
+			uniform sampler2D texMap;
+			uniform vec3 Le, le;
+			uniform vec3 ka, kd;
+			varying vec3 normal;
+			float atan2(float y, float x) { return 2.0*atan((length(vec2(x, y)) - x)/y); }
+
+			void main() {
+					// Ambient intensity
+					vec3 Ia = ka*Le;
+
+					// Normal
+					vec3 n = normalize(normal);
+
+					// Diffuse intensity
+					vec3 Id = kd*Le*max(dot(n, -le), 0.0);
+
+					// The texture coordinates given the unit sphere
+					vec2 fTexCoord = vec2(-0.5*atan2(normal.z, n.x), asin(normal.y))/3.14159 + vec2(0.5);
+
+					// The color equals the product of the texture and illumination
+					gl_FragColor = vec4(Ia + Id, 1.0)*texture2D(texMap, fTexCoord);
+			}
+		</script>
+	</head>
+
+	<body>
+		<button id="increaseSubdivision">Increase Subdivisions</button>
+		<button id="decreaseSubdivison">Decrease Subdivisions</button>
+		<br>
+		<canvas id="webgl" width="512" height="512">
+			Oops ... your browser doesn't support the HTML5 canvas element
+		</canvas>
+	</body>
+</html>
