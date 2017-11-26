@@ -17,17 +17,16 @@
 
 			void main() {
 			  	gl_Position = modelViewMatrix * vPosition;
-				fColor = vColor;
+					fColor = vColor;
 			}
 		</script>
 
 		<script id="fragment-shader" type="x-shader/x-fragment">
 			precision mediump float;
-
 			varying vec4 fColor;
 
 			void main() {
-			  gl_FragColor = fColor;
+			  	gl_FragColor = fColor;
 			}
 		</script>
 	</head>
