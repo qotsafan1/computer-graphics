@@ -13,8 +13,8 @@
 			attribute vec4 vPosition;
 			attribute vec4 vColor;
 			varying vec4 color;
-			void
-			main()
+
+			void main()
 			{
 			    gl_Position = vPosition;
 			    color = vColor;
@@ -25,8 +25,7 @@
 			precision mediump float;
 			varying vec4 color;
 
-			void
-			main()
+			void main()
 			{
 			    gl_FragColor = color;
 			}

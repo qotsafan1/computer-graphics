@@ -12,15 +12,11 @@
 		<script id="vertex-shader" type="x-shader/x-vertex">
 			attribute vec4 vPosition;
 			uniform float theta;
-			
-			void
-			main()
-			{
-			    float s = sin( theta );
-			    float c = cos( theta );
 
-			    gl_Position.x = -s * vPosition.y + c * vPosition.x;
-			    gl_Position.y =  s * vPosition.x + c * vPosition.y;
+			void main()
+			{
+			    gl_Position.x = vPosition.x * cos(theta) - vPosition.y * sin(theta);
+			    gl_Position.y = vPosition.x * sin(theta) + vPosition.y * cos(theta);
 			    gl_Position.z = 0.0;
 			    gl_Position.w = 1.0;
 			}
@@ -29,10 +25,9 @@
 		<script id="fragment-shader" type="x-shader/x-fragment">
 			precision mediump float;
 
-			void
-			main()
+			void main()
 			{
-			    gl_FragColor = vec4( 255.0, 255.0, 255.0, 1.0 );
+			    gl_FragColor = vec4(255.0, 255.0, 255.0, 1.0);
 			}
 		</script>
 	</head>
