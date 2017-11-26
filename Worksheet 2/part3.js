@@ -1,4 +1,5 @@
 var gl;
+var canvas;
 
 var colorIndex = 0;
 var pointIndex = 0;
@@ -7,8 +8,7 @@ var triangleIndex = 501;
 var pointArray = [];
 var triangleArray = [];
 
-var maxNumTriangles = 1503;
-var maxNumVertices  = 3 * maxNumTriangles;
+var maxNumVertices  = 4509;
 
 // Mode
 // 0 - Point
@@ -16,60 +16,71 @@ var maxNumVertices  = 3 * maxNumTriangles;
 var mode = 0;
 
 var colors = [
-    vec4( 0.0, 0.0, 0.0, 1.0 ),  // black
-    vec4( 1.0, 0.0, 0.0, 1.0 ),  // red
-    vec4( 1.0, 1.0, 0.0, 1.0 ),  // yellow
-    vec4( 0.0, 1.0, 0.0, 1.0 ),  // green
-    vec4( 0.0, 0.0, 1.0, 1.0 ),  // blue
-    vec4( 1.0, 0.0, 1.0, 1.0 ),  // magenta
-    vec4( 0.0, 1.0, 1.0, 1.0 )   // cyan
+    vec4(0.0, 0.0, 0.0, 1.0),  // black
+    vec4(1.0, 0.0, 0.0, 1.0),  // red
+    vec4(1.0, 1.0, 0.0, 1.0),  // yellow
+    vec4(0.0, 1.0, 0.0, 1.0),  // green
+    vec4(0.0, 0.0, 1.0, 1.0),  // blue
+    vec4(1.0, 0.0, 1.0, 1.0),  // magenta
+    vec4(0.0, 1.0, 1.0, 1.0)   // cyan
 ];
 
 window.onload = function init()
 {
-    canvas = document.getElementById( "webgl" );
-    
-    gl = WebGLUtils.setupWebGL( canvas );
-    if ( !gl ) { 
-        console.log( "WebGL isn't available" ); 
+    canvas = document.getElementById("webgl");
+
+    gl = WebGLUtils.setupWebGL(canvas);
+    if (!gl) {
+        console.log("WebGL isn't available");
         return;
     }
 
-    gl.viewport( 0, 0, canvas.width, canvas.height );
+    gl.viewport(0, 0, canvas.width, canvas.height);
     gl.clearColor(0.3921, 0.5843, 0.9294, 1.0);
 
-    var program = initShaders( gl, "vertex-shader", "fragment-shader" );
-    gl.useProgram( program );
+    var program = initShaders(gl, "vertex-shader", "fragment-shader");
+    gl.useProgram(program);
 
-    var pointBuffer = gl.createBuffer();
-    gl.bindBuffer( gl.ARRAY_BUFFER, pointBuffer);
-    gl.bufferData( gl.ARRAY_BUFFER, 8*maxNumVertices, gl.STATIC_DRAW );
+    var vBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, 8*maxNumVertices, gl.STATIC_DRAW);
 
     var vPosition = gl.getAttribLocation(program, "vPosition");
     gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(vPosition);
 
-    var colorBuffer = gl.createBuffer();
-    gl.bindBuffer( gl.ARRAY_BUFFER, colorBuffer );
-    gl.bufferData( gl.ARRAY_BUFFER, 16*maxNumVertices, gl.STATIC_DRAW );
+    var cBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, 16*maxNumVertices, gl.STATIC_DRAW);
 
-    var vColor = gl.getAttribLocation( program, "vColor" );
-    gl.vertexAttribPointer( vColor, 4, gl.FLOAT, false, 0, 0 );
-    gl.enableVertexAttribArray( vColor );
+    var vColor = gl.getAttribLocation(program, "vColor");
+    gl.vertexAttribPointer(vColor, 4, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(vColor);
+
+    document.getElementById("clear").onclick = function(){
+        clearCanvas();
+    };
+
+    document.getElementById("pointsButton").onclick = function(){
+        changeMode(0);
+    };
+
+    document.getElementById("triangleButton").onclick = function(){
+        changeMode(1);
+    };
 
     var m = document.getElementById("colorMenu");
-
     m.addEventListener("click", function() {
         colorIndex = m.selectedIndex;
     });
 
-    canvas.addEventListener("mousedown", function(e) {        
+    canvas.addEventListener("mousedown", function(e) {
         var point = vec2(2*(e.clientX-e.target.getBoundingClientRect().left)/canvas.width-1,
             2*(canvas.height-e.clientY+e.target.getBoundingClientRect().top)/canvas.height-1);
 
         if (mode === 1) {
             triangleIndex++;
-            
+
             if (triangleIndex%3 === 0) {
                 var v3 = point;
                 var v2 = pointArray.pop();
@@ -78,14 +89,14 @@ window.onload = function init()
                 triangleArray.push(v2);
                 triangleArray.push(v3);
                 pointIndex -= 2;
-                
-                createTriangle(pointBuffer, colorBuffer, [v1,v2,v3]);
+
+                createTriangle(vBuffer, cBuffer, [v1,v2,v3]);
             }
             else {
-                createPoint(pointBuffer, colorBuffer, point);
+                createPoint(vBuffer, cBuffer, point);
             }
         } else {
-            createPoint(pointBuffer, colorBuffer, point);
+            createPoint(vBuffer, cBuffer, point);
         }
     });
 
@@ -95,16 +106,16 @@ window.onload = function init()
 
 function render()
 {
-    gl.clear( gl.COLOR_BUFFER_BIT );
+    gl.clear(gl.COLOR_BUFFER_BIT);
 
     if (pointArray.length > 0) {
-        gl.drawArrays( gl.POINTS, 0, pointArray.length);
+        gl.drawArrays(gl.POINTS, 0, pointArray.length);
     }
 
     if (triangleIndex > 501) {
-        gl.drawArrays( gl.TRIANGLES, 501, triangleArray.length+3);
+        gl.drawArrays(gl.TRIANGLES, 501, triangleArray.length+3);
     }
-    
+
     window.requestAnimFrame(render);
 }
 
@@ -125,30 +136,30 @@ function changeMode(newMode) {
             triangleIndex--;
         }
     }
-    
+
     mode = newMode;
 }
 
-function createPoint(pointBuffer, colorBuffer, point) {
+function createPoint(vBuffer, cBuffer, point) {
     pointArray.push(point);
-    gl.bindBuffer( gl.ARRAY_BUFFER, pointBuffer );
+    gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
     gl.bufferSubData(gl.ARRAY_BUFFER, 8*(pointArray.length-1), flatten(point));
-    
+
     var t = vec4(colors[colorIndex]);
-    
-    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer);
     gl.bufferSubData(gl.ARRAY_BUFFER, 16*pointIndex, flatten(t));
     pointIndex++;
 }
 
-function createTriangle(pointBuffer, colorBuffer, points) {
-    gl.bindBuffer( gl.ARRAY_BUFFER, pointBuffer );
+function createTriangle(vBuffer, cBuffer, points) {
+    gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
     gl.bufferSubData(gl.ARRAY_BUFFER, 8*(triangleIndex+0), flatten(points[0]));
     gl.bufferSubData(gl.ARRAY_BUFFER, 8*(triangleIndex+1), flatten(points[1]));
     gl.bufferSubData(gl.ARRAY_BUFFER, 8*(triangleIndex+2), flatten(points[2]));
 
     var t = vec4(colors[colorIndex]);
-    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+    gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer);
     gl.bufferSubData(gl.ARRAY_BUFFER, 16*(triangleIndex+0), flatten(t));
     gl.bufferSubData(gl.ARRAY_BUFFER, 16*(triangleIndex+1), flatten(t));
     gl.bufferSubData(gl.ARRAY_BUFFER, 16*(triangleIndex+2), flatten(t));
