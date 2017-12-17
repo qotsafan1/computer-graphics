@@ -20,7 +20,8 @@
 				uniform mat4 projectionMatrix;
 				uniform mat3 normalMatrix;
 
-				void main() {
+				void main()
+				{
 						vec3 pos = (modelViewMatrix * vPosition).xyz;
 						vec3 light = (modelViewMatrix * lightPosition).xyz;
 
@@ -29,7 +30,9 @@
 						N = normalMatrix * vNormal.xyz;
 
 						gl_Position = projectionMatrix * modelViewMatrix * vPosition;
+
 				}
+
 		</script>
 
 		<script id="fragment-shader" type="x-shader/x-fragment">
@@ -41,29 +44,28 @@
 				void main()
 				{
 						vec4 fColor;
-						vec3 normN = normalize(N);
-						vec3 normL = normalize(L);
-						vec3 normE = normalize(E);
 
-						vec3 H = normalize(normL + normE);
+						vec3 normalN = normalize(N);
+						vec3 normalL = normalize(L);
+						vec3 normalE = normalize(E);
 
+						vec3 H = normalize(normalL + normalE);
 						vec4 ambient = ambientProduct;
 
-						float Kd = max( dot(normL, normN), 0.0 );
+						float Kd = max( dot(normalL, normalN), 0.0 );
 						vec4  diffuse = Kd*diffuseProduct;
 
-						float Ks = pow(max(dot(normN, H), 0.0), shininess);
+						float Ks = pow(max(dot(normalN, H), 0.0), shininess);
 						vec4 specular = Ks*specularProduct;
 
-						if( dot(normL, normN) < 0.0 ) {
-								specular = vec4(0.0, 0.0, 0.0, 1.0);
-						}
+						if( dot(normalL, normalN) < 0.0 )	specular = vec4(0.0, 0.0, 0.0, 1.0);
 
 						fColor = ambient + diffuse + specular;
 						fColor.a = 1.0;
 
 						gl_FragColor = fColor;
 				}
+
 		</script>
 	</head>
 
@@ -78,15 +80,15 @@
 		</div>
 		<div>
 			<span>ambient</span><br>
-			0.0 <input id="ka" type="range" min="0.0" max="1.0" step="0.01" value="0.1" /> 1.0<br><br>
+			0.0 <input id="ambientProduct" type="range" min="0.0" max="1.0" step="0.01" value="0.1" /> 1.0<br><br>
 			<span>diffuse</span><br>
-			0.0 <input id="kd" type="range" min="0.0" max="1.0" step="0.01" value="0.1" /> 1.0<br><br>
+			0.0 <input id="diffuseProduct" type="range" min="0.0" max="1.0" step="0.01" value="0.1" /> 1.0<br><br>
 			<span>specular</span><br>
-			0.0 <input id="ks" type="range" min="0.0" max="1.0" step="0.01" value="0.1" /> 1.0<br><br>
-			<span>alpha</span><br>
-			0.0 <input id="alpha" type="range" min="5.0" max="100.0" step="10" value="5.0" /> 1.0<br><br>
+			0.0 <input id="specularProduct" type="range" min="0.0" max="1.0" step="0.01" value="0.1" /> 1.0<br><br>
+			<span>shininess</span><br>
+			0.0 <input id="shininess" type="range" min="0.0" max="1000.0" step="50" value="100.0" /> 1000<br><br>
 			<span>light emission</span><br>
-			0.0 <input id="lightEmission" type="range" min="0.0" max="1.0" step="0.01" value="0.1" /> 1.0<br><br>
+			0.0 <input id="lightEmission" type="range" min="0.0" max="1.0" step="0.1" value="1.0" /> 1.0<br><br>
 		</div>
 	</body>
 </html>
