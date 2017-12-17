@@ -11,41 +11,51 @@
 
 		<script id="vertex-shader" type="x-shader/x-vertex">
 			attribute vec4 vPosition;
-			attribute vec4 vColor;
 			attribute vec4 vNormal;
+			attribute vec4 vColor;
 
 			varying vec4 fColor;
 
+			uniform vec4 ambientProduct, diffuseProduct, specularProduct;
 			uniform mat4 modelViewMatrix;
 			uniform mat4 projectionMatrix;
 			uniform vec4 lightPosition;
-			uniform vec4 lightEmission;
-			uniform vec4 ka, kd, ks;
-			uniform float alpha;
+			uniform float shininess;
+			uniform mat3 normalMatrix;
 
 			void main() {
-					vec3 L = normalize((modelViewMatrix*lightPosition).xyz);
-					vec3 N = normalize((modelViewMatrix*vNormal).xyz);
+				vec3 pos = (modelViewMatrix * vPosition).xyz;
+				vec3 light = (modelViewMatrix * lightPosition).xyz;
+				vec3 L;
 
-					// Ambient intensity
-					vec4 ambient = ka * lightEmission;
+				// check for directional light
+				if(lightPosition.w == 0.0) L = normalize(light);
+				else L = normalize( light - pos );
 
-					// Diffuse intensity
-					float ln = max(dot(N,-L), 0.0);
-					vec4 diffuse = kd * ln * lightEmission;
+				vec3 E = -normalize( pos );
+				vec3 H = normalize( L + E );
 
-					// The direction of a perfect reflector
-					vec3 r = normalize(mat3(modelViewMatrix)*reflect(L, N));
+				// Transform vertex normal into eye coordinates
+				vec3 N = normalize( normalMatrix*vNormal.xyz);
 
-					// The direction of the viewer
-					vec3 v = normalize(-(modelViewMatrix * vPosition).xyz);
+				// Compute terms in the illumination equation
+				vec4 ambient = ambientProduct;
 
-					// Specular intensity
-					vec4 specular = ks * lightEmission * pow(max(dot(r, v), 0.0), alpha);
+				float Kd = max( dot(L, N), 0.0 );
+				vec4  diffuse = Kd*diffuseProduct;
 
-					gl_Position = projectionMatrix * modelViewMatrix * vPosition;
-					fColor = vColor + ambient + diffuse + specular;
-					fColor.a = 1.0;
+				float Ks = pow( max(dot(N, H), 0.0), shininess );
+				vec4  specular = Ks * specularProduct;
+
+				if( dot(L, N) < 0.0 ) {
+						specular = vec4(0.0, 0.0, 0.0, 1.0);
+				}
+
+				gl_Position = projectionMatrix * modelViewMatrix * vPosition;
+
+				fColor = (ambient + diffuse +specular) * vColor;
+
+				fColor.a = 1.0;
 			}
 		</script>
 
@@ -71,15 +81,15 @@
 		</div>
 		<div>
 			<span>ambient</span><br>
-			0.0 <input id="ka" type="range" min="0.0" max="1.0" step="0.01" value="0.1" /> 1.0<br><br>
+			0.0 <input id="ambientProduct" type="range" min="0.0" max="1.0" step="0.01" value="0.1" /> 1.0<br><br>
 			<span>diffuse</span><br>
-			0.0 <input id="kd" type="range" min="0.0" max="1.0" step="0.01" value="0.1" /> 1.0<br><br>
+			0.0 <input id="diffuseProduct" type="range" min="0.0" max="1.0" step="0.01" value="0.1" /> 1.0<br><br>
 			<span>specular</span><br>
-			0.0 <input id="ks" type="range" min="0.0" max="1.0" step="0.01" value="0.1" /> 1.0<br><br>
-			<span>alpha</span><br>
-			0.0 <input id="alpha" type="range" min="5.0" max="100.0" step="10" value="5.0" /> 1.0<br><br>
+			0.0 <input id="specularProduct" type="range" min="0.0" max="1.0" step="0.01" value="0.1" /> 1.0<br><br>
+			<span>shininess</span><br>
+			0.0 <input id="shininess" type="range" min="0.0" max="1000.0" step="50" value="100.0" /> 1000<br><br>
 			<span>light emission</span><br>
-			0.0 <input id="lightEmission" type="range" min="0.0" max="1.0" step="0.01" value="0.1" /> 1.0<br><br>
+			0.0 <input id="lightEmission" type="range" min="0.0" max="1.0" step="0.1" value="1.0" /> 1.0<br><br>
 		</div>
 	</body>
 </html>

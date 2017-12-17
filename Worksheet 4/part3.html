@@ -11,26 +11,28 @@
 
 		<script id="vertex-shader" type="x-shader/x-vertex">
 			attribute vec4 vPosition;
-			attribute vec4 vColor;
 			attribute vec4 vNormal;
+			attribute vec4 vColor;
 
 			varying vec4 fColor;
 
+			uniform vec4 diffuseProduct;
 			uniform mat4 modelViewMatrix;
 			uniform mat4 projectionMatrix;
 			uniform vec4 lightPosition;
-			uniform vec4 lightEmission;
 
 			void main() {
 					vec3 L = normalize((modelViewMatrix*lightPosition).xyz);
-					vec3 N = normalize((modelViewMatrix*vNormal).xyz);
+					vec3 N = normalize( vNormal.xyz );
 
-					float ln = max(dot(N,-L), 0.0);
-					vec4 diffuse = ln * lightEmission;
+					float Kd = max( dot(L, N), 0.0 );
+					vec4 diffuse = Kd*diffuseProduct;
 
 					gl_Position = projectionMatrix * modelViewMatrix * vPosition;
+					gl_PointSize = 10.0;
 					fColor = diffuse * vColor;
 					fColor.a = 1.0;
+
 			}
 		</script>
 
