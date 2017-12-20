@@ -12,17 +12,19 @@
 
 		<script id="vertex-shader" type="x-shader/x-vertex">
 				attribute vec4 vPosition;
-				attribute vec3 vNormal;
+				attribute vec4 vNormal;
 				attribute vec4 vColor;
+
 				uniform mat4 mvpMatrix;
 				uniform vec3 lightPosition;
 				varying vec4 fColor;
 				void main()
 				{
-						vec3 k_d = vColor.rgb;
-						vec3 n = vNormal;
-						vec3 I_d = k_d*dot(n, normalize(lightPosition - vPosition.xyz));
-						fColor = vec4(I_d, 1.0);
+						vec3 diffuse = vColor.rgb*dot(vNormal.xyz,
+								normalize(lightPosition - vPosition.xyz)
+						);
+
+						fColor = vec4(diffuse, 1.0);
 						gl_Position = mvpMatrix * vPosition;
 				}
 		</script>
@@ -44,8 +46,9 @@
 
 		<script id="ground-vertex-shader" type="x-shader/x-vertex">
 				attribute vec4 vPosition;
-				uniform mat4 mvpMatrix;
 				attribute vec2 vTexCoord;
+
+				uniform mat4 mvpMatrix;
 				varying vec2 fTexCoord;
 				void main()
 				{
@@ -72,7 +75,7 @@
 			Oops ... your browser doesn't support the HTML5 canvas element
 		</canvas>
 		<br>
-		<button id="Spin">spin on/off</button>
-		<button id="Jump">jump on/off</button>
+		<button id="Spin">Spin ON/OFF</button>
+		<button id="Jump">Move ON/OFF</button>
 	</body>
 </html>

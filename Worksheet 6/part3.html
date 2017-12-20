@@ -10,15 +10,27 @@
 		<script type="text/javascript" src="part3.js"></script>
 
 		<script id="vertex-shader" type="x-shader/x-vertex">
-			attribute vec4 vPosition;
+				attribute vec4 vPosition;
+				attribute vec4 vNormal;
 
-			uniform mat4 modelViewMatrix;
-			uniform mat4 projectionMatrix;
-			varying vec3 normal;
+				varying vec4 fColor;
+
+				uniform vec4 diffuseProduct, ambientProduct;
+				uniform mat4 modelViewMatrix;
+				uniform mat4 projectionMatrix;
+				uniform vec4 lightPosition;
 
 			void main() {
+					vec3 L = normalize((modelViewMatrix*lightPosition).xyz);
+					vec3 N = normalize( vNormal.xyz );
+
+					float Kd = max( dot(L, N), 0.0 );
+					vec4 diffuse = Kd*diffuseProduct;
+
 					gl_Position = projectionMatrix * modelViewMatrix * vPosition;
-					normal = vPosition.xyz;
+					gl_PointSize = 10.0;
+					fColor = diffuse * vColor;
+					fColor.a = 1.0;
 			}
 		</script>
 

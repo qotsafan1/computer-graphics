@@ -6,19 +6,19 @@ var projectionMatrixLoc;
 var model;
 
 var eye = vec3(0.0, 0.0, 9.5);
-var at = vec3(0.0, 0.0, 0.0);
+var at = vec3(0.0, 1.0, 0.0);
 var up = vec3(0.0, 1.0, 0.0);
 
-var g_objDoc = null;         // The information of OBJ file
-var g_drawingInfo = null;    // The information for drawing 3D model
+var g_objDoc = null;
+var g_drawingInfo = null;
 var gobjDoc;
 
 window.onload = function init() {
-    canvas = document.getElementById( "webgl" );
+    canvas = document.getElementById("webgl");
 
-    gl = WebGLUtils.setupWebGL( canvas );
-    if ( !gl ) {
-        alert( "WebGL isn't available" );
+    gl = WebGLUtils.setupWebGL(canvas);
+    if (!gl) {
+        alert("WebGL isn't available");
     }
 
     gl.viewport(0, 0, canvas.width, canvas.height);
@@ -27,26 +27,18 @@ window.onload = function init() {
     gl.enable(gl.DEPTH_TEST);
     //gl.enable(gl.CULL_FACE);
 
-    main();
-}
-
-function main() {
     var program = initShaders(gl, "vertex-shader", "fragment-shader");
     gl.useProgram(program);
 
     modelViewMatrixLoc = gl.getUniformLocation(program, "modelViewMatrix");
     projectionMatrixLoc = gl.getUniformLocation(program, "projectionMatrix")
 
-    // Get the storage locations of attribute and uniform variables
-    //var program = gl.program;
     program.vPosition = gl.getAttribLocation(program, 'vPosition');
     program.vNormal = gl.getAttribLocation(program, 'vNormal');
     program.vColor = gl.getAttribLocation(program, 'vColor');
 
-    // Prepare empy buffer objects for vertex coordinates
     model = initVertexBuffers(gl, program);
 
-    // Start reading the OBJ file
     readOBJFile("teapot.obj", gl, model, 1, true);
 
     render();
@@ -67,7 +59,7 @@ function render() {
     var projectionMatrix = perspective(45.0, aspect, 0.1, 10.0);
     gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix));
 
-    var modelViewMatrix = lookAt( eye, at, up ) ;
+    var modelViewMatrix = lookAt(eye, at, up) ;
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
 
     gl.drawElements(gl.TRIANGLES, g_drawingInfo.indices.length, gl.UNSIGNED_SHORT, 0);

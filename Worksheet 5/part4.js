@@ -1,53 +1,33 @@
 var gl;
 var canvas;
 
-var modelViewMatrixLoc, projectionMatrixLoc;
-var modelViewMatrix, projectionMatrix;
-
-var nMatrix, normalMatrixLocation;
-
-// Rotate
-var t = Date.now()
-var rotation = -3.5;
-var radius = 10.5;
-
-//var eye = vec3(radius * Math.sin(rotation), 0.0, radius * Math.cos(rotation));
-
-var eye = vec3(0.0, 0.0, 9.5);
-var at = vec3(0.0, 0.0, 0.0);
-var up = vec3(0.0, 1.0, 0.0);
-
-var index = 0;
-var pointsArray = [];
-var normalsArray = [];
-
-var g_objDoc = null;         // The information of OBJ file
-var g_drawingInfo = null;    // The information for drawing 3D model
-var gobjDoc;
-
+var modelViewMatrixLoc;
+var projectionMatrixLoc;
+var normalMatrixLoc;
 var model;
 
-// Set the light properties
-var lightPosition = vec4(1.0, 1.0, -1.0, 0.0);
-var lightAmbient = vec4(1.0, 0.0, 1.0, 1.0);
-var lightDiffuse = vec4(1.0, 1.0, 1.0, 1.0);
-var lightSpecular = vec4(1.0, 1.0, 1.0, 1.0);
+var eye = vec3(0.0, 0.0, 9.5);
+var at = vec3(0.0, 1.0, 0.0);
+var up = vec3(0.0, 1.0, 0.0);
 
-//Set the material properties
-var materialAmbient = vec4(0.2, 0.2, 0.2, 1.0);
-var materialDiffuse = vec4(0.0, 0.8, 1.0, 1.0);
-var materialSpecular = vec4(1.0, 1.0, 1.0, 1.0);
+var g_objDoc = null;
+var g_drawingInfo = null;
+var gobjDoc;
 
-var materialShininess = 20.0;
+var lightPosition = vec4(0.0, 0.0, 1.0, 0.0);
+var ambientProduct = vec4(0.3, 0.3, 0.3, 1.0);
+var diffuseProduct = vec4(0.3, 0.3, 0.3, 1.0);
+var specularProduct = vec4(0.3, 0.3, 0.3, 1.0);
+var shininess = 30.0;
 
-var ambientProduct, diffuseProduct, specularProduct;
+var ambient, diffuse, specular;
 
 window.onload = function init() {
-    canvas = document.getElementById( "webgl" );
+    canvas = document.getElementById("webgl");
 
-    gl = WebGLUtils.setupWebGL( canvas );
-    if ( !gl ) {
-        alert( "WebGL isn't available" );
+    gl = WebGLUtils.setupWebGL(canvas);
+    if (!gl) {
+        alert("WebGL isn't available");
     }
 
     gl.viewport(0, 0, canvas.width, canvas.height);
@@ -55,47 +35,29 @@ window.onload = function init() {
 
     gl.enable(gl.DEPTH_TEST);
     gl.enable(gl.CULL_FACE);
-
-    main();
-}
-
-function main() {
+    // gl.cullFace(gl.BACK);
 
     var program = initShaders(gl, "vertex-shader", "fragment-shader");
     gl.useProgram(program);
 
+    projectionMatrixLoc = gl.getUniformLocation(program, "projectionMatrix");
     modelViewMatrixLoc = gl.getUniformLocation(program, "modelViewMatrix");
-    projectionMatrixLoc = gl.getUniformLocation(program, "projectionMatrix")
     normalMatrixLoc = gl.getUniformLocation(program, "normalMatrix");
 
-    // Get the storage locations of attribute and uniform variables
-    //var program = gl.program;
     program.vPosition = gl.getAttribLocation(program, 'vPosition');
     program.vNormal = gl.getAttribLocation(program, 'vNormal');
-    //program.vColor = gl.getAttribLocation(program, 'vColor');
 
-
-    // Prepare empy buffer objects for vertex coordinates
-    model = initVertexBuffers(gl, program);
-
-
-    // Start reading the OBJ file
-    readOBJFile("teapot.obj", gl, model, 1, true);
-
-    ambientProduct = mult(lightAmbient, materialAmbient);
-    diffuseProduct = mult(lightDiffuse, materialDiffuse);
-    specularProduct = mult(lightSpecular, materialSpecular);
-
+    gl.uniform4fv(gl.getUniformLocation(program, "lightPosition"), flatten(lightPosition));
     gl.uniform4fv(gl.getUniformLocation(program, "ambientProduct"), flatten(ambientProduct));
     gl.uniform4fv(gl.getUniformLocation(program, "diffuseProduct"), flatten(diffuseProduct));
     gl.uniform4fv(gl.getUniformLocation(program, "specularProduct"), flatten(specularProduct));
-    gl.uniform1f(gl.getUniformLocation(program, "shininess"), materialShininess);
-    gl.uniform4fv(gl.getUniformLocation(program, "lightPosition"), flatten(lightPosition));
+    gl.uniform1f(gl.getUniformLocation(program, "shininess"), shininess);
+
+    model = initVertexBuffers(gl, program);
+
+    readOBJFile("teapot.obj", gl, model, 1, true);
 
     render();
-
-    //draw(gl, gl.program, currentAngle, viewProjMatrix, model);
-
 }
 
 function render() {
@@ -113,11 +75,11 @@ function render() {
     var projectionMatrix = perspective(45.0, aspect, 0.1, 10.0);
     gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix));
 
-    var modelViewMatrix = lookAt( eye, at, up ) ;
+    var modelViewMatrix = lookAt(eye, at, up);
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
 
-    nMatrix = normalMatrix(modelViewMatrix, true);
-    gl.uniformMatrix3fv(normalMatrixLoc, false, flatten(nMatrix));
+    var normMatrix = normalMatrix(modelViewMatrix, true);
+    gl.uniformMatrix3fv(normalMatrixLoc, false, flatten(normMatrix));
 
     gl.drawElements(gl.TRIANGLES, g_drawingInfo.indices.length, gl.UNSIGNED_SHORT, 0);
 }
@@ -127,9 +89,8 @@ function initVertexBuffers(gl, program) {
     var o = new Object();
     o.vertexBuffer = createEmptyArrayBuffer(gl, program.vPosition, 3, gl.FLOAT);
     o.normalBuffer = createEmptyArrayBuffer(gl, program.vNormal, 3, gl.FLOAT);
-    //o.colorBuffer = createEmptyArrayBuffer(gl, program.vColor, 4, gl.FLOAT);
     o.indexBuffer = gl.createBuffer();
-    
+
     return o;
 }
 
@@ -183,9 +144,6 @@ function onReadComplete(gl, model, objDoc) {
 
     gl.bindBuffer(gl.ARRAY_BUFFER, model.normalBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, drawingInfo.normals, gl.STATIC_DRAW);
-
-    //gl.bindBuffer(gl.ARRAY_BUFFER, model.colorBuffer);
-    //gl.bufferData(gl.ARRAY_BUFFER, drawingInfo.colors, gl.STATIC_DRAW);
 
     //Write indices to the buffer object
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, model.indexBuffer);

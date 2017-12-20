@@ -11,8 +11,9 @@
 
 		<script id="vertex-shader" type="x-shader/x-vertex">
 				attribute vec4 vPosition;
-				uniform mat4 mvpMatrix;
 				attribute vec2 vTexCoord;
+
+				uniform mat4 mvpMatrix;
 				varying vec2 fTexCoord;
 
 				void main()

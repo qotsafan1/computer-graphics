@@ -39,34 +39,32 @@ var m = mat4();
 
 window.onload = function init()
 {
-    canvas = document.getElementById( "webgl" );
+    canvas = document.getElementById("webgl");
 
     gl = WebGLUtils.setupWebGL(canvas, { alpha: false });
-    if ( !gl ) {
-        console.log( "WebGL isn't available" );
+    if (!gl) {
+        console.log("WebGL isn't available");
         return;
     }
 
-    gl.viewport( 0, 0, canvas.width, canvas.height );
+    gl.viewport(0, 0, canvas.width, canvas.height);
     gl.clearColor(0.3921, 0.5843, 0.9294, 1.0);
     gl.enable(gl.DEPTH_TEST);
     gl.enable(gl.BLEND);
     gl.blendEquation(gl.FUNC_ADD);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
-    var program = initShaders( gl, "vertex-shader", "fragment-shader" );
-    gl.useProgram( program );
+    var program = initShaders(gl, "vertex-shader", "fragment-shader");
+    gl.useProgram(program);
 
     gl.mvpMatrix = gl.getUniformLocation(program, "mvpMatrix");
     gl.texMap = gl.getUniformLocation(program, "texMap");
     gl.visibility = gl.getUniformLocation(program, "visibility");
 
-    // Setup the texture of the ground
     var texture0 = gl.createTexture();
     var image0 = document.createElement('img');
     image0.crossOrigin = 'anonymous';
 
-    // We load the image into the texture
     image0.onload = function () {
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, texture0);
@@ -78,21 +76,18 @@ window.onload = function init()
     };
     image0.src = 'xamp23.png';
 
-    // We create the second red texture
     var texture1 = gl.createTexture();
     var image1 = new Uint8Array([255, 0, 0]);
     gl.activeTexture(gl.TEXTURE1);
     gl.bindTexture(gl.TEXTURE_2D, texture1);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, image1);
 
-    // Shadow texture
     var texture2 = gl.createTexture();
     var image2 = new Uint8Array([0, 0, 0]);
     gl.activeTexture(gl.TEXTURE2);
     gl.bindTexture(gl.TEXTURE_2D, texture2);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, image2);
 
-    //Generate texture coordinates and push to array
     var texCoordsArray = [
       // Large ground quad
       vec2(0.0, 0.0),
@@ -128,8 +123,8 @@ window.onload = function init()
     gl.enableVertexAttribArray(vTexCoord);
 
     var vBuffer = gl.createBuffer();
-    gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer);
-    gl.bufferData( gl.ARRAY_BUFFER, flatten(vertices), gl.STATIC_DRAW );
+    gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, flatten(vertices), gl.STATIC_DRAW);
 
     var vPosition = gl.getAttribLocation(program, "vPosition");
     gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
@@ -137,7 +132,6 @@ window.onload = function init()
 
     render();
 }
-
 
 function render() {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -153,10 +147,8 @@ function render() {
     gl.uniform1i(gl.texMap, 0);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
 
-    // Rotate
-    var t = Date.now()
-    var rotation = radians(t * 0.05 % 360)
-    //var rotation = 0.01;
+    var t = Date.now();
+    var rotation = radians(t * 0.05 % 360);
     light[0] = Math.sin(rotation) * radius;
     light[2] = Math.cos(rotation) * radius - radius;
 

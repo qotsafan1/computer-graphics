@@ -32,7 +32,7 @@
 
 				gl_Position = projectionMatrix * modelViewMatrix * vPosition;
 		}
-</script>
+		</script>
 <script id="fragment-shader" type="x-shader/x-fragment">
 		precision mediump float;
 		uniform float shininess;
@@ -42,30 +42,27 @@
 		void main()
 		{
 				vec4 fColor;
-				vec3 normN = normalize(N);
-				vec3 normL = normalize(L);
-				vec3 normE = normalize(E);
 
-				vec3 H = normalize(normL + normE);
+				vec3 normalN = normalize(N);
+				vec3 normalL = normalize(L);
+				vec3 normalE = normalize(E);
 
+				vec3 H = normalize(normalL + normalE);
 				vec4 ambient = ambientProduct;
 
-				float Kd = max( dot(normL, normN), 0.0 );
+				float Kd = max( dot(normalL, normalN), 0.0 );
 				vec4  diffuse = Kd*diffuseProduct;
 
-				float Ks = pow(max(dot(normN, H), 0.0), shininess);
+				float Ks = pow(max(dot(normalN, H), 0.0), shininess);
 				vec4 specular = Ks*specularProduct;
 
-				if( dot(normL, normN) < 0.0 ) {
-						specular = vec4(0.0, 0.0, 0.0, 1.0);
-				}
+				if( dot(normalL, normalN) < 0.0 )	specular = vec4(0.0, 0.0, 0.0, 1.0);
 
 				fColor = ambient + diffuse + specular;
 				fColor.a = 1.0;
 
 				gl_FragColor = fColor;
 		}
-
     </script>
 
 	</head>
