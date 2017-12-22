@@ -14,13 +14,15 @@ var g_objDoc = null;
 var g_drawingInfo = null;
 var gobjDoc;
 
-var lightPosition = vec4(0.0, 0.0, 1.0, 0.0);
-var ambientProduct = vec4(0.3, 0.3, 0.3, 1.0);
-var diffuseProduct = vec4(0.3, 0.3, 0.3, 1.0);
-var specularProduct = vec4(0.3, 0.3, 0.3, 1.0);
-var shininess = 30.0;
+var lightPosition = vec4(1.0, 1.0, 1.0, 0.0);
+var lightAmbient = vec4(0.2, 0.2, 0.2, 1.0 );
+var lightDiffuse = vec4( 1.0, 1.0, 1.0, 1.0 );
+var lightSpecular = vec4( 1.0, 1.0, 1.0, 1.0 );
 
-var ambient, diffuse, specular;
+var materialAmbient = vec4( 1.0, 0.0, 1.0, 1.0 );
+var materialDiffuse = vec4( 1.0, 0.8, 0.0, 1.0 );
+var materialSpecular = vec4( 1.0, 1.0, 1.0, 1.0 );
+var materialShininess = 20.0;
 
 window.onload = function init() {
     canvas = document.getElementById("webgl");
@@ -48,10 +50,16 @@ window.onload = function init() {
     program.vNormal = gl.getAttribLocation(program, 'vNormal');
 
     gl.uniform4fv(gl.getUniformLocation(program, "lightPosition"), flatten(lightPosition));
+
+    var ambientProduct = mult(lightAmbient, materialAmbient);
     gl.uniform4fv(gl.getUniformLocation(program, "ambientProduct"), flatten(ambientProduct));
+
+    var diffuseProduct = mult(lightDiffuse, materialDiffuse);
     gl.uniform4fv(gl.getUniformLocation(program, "diffuseProduct"), flatten(diffuseProduct));
+
+    var specularProduct = mult(lightSpecular, materialSpecular);
     gl.uniform4fv(gl.getUniformLocation(program, "specularProduct"), flatten(specularProduct));
-    gl.uniform1f(gl.getUniformLocation(program, "shininess"), shininess);
+    gl.uniform1f(gl.getUniformLocation(program, "shininess"), materialShininess);
 
     model = initVertexBuffers(gl, program);
 

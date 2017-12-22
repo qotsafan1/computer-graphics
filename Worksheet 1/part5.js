@@ -1,5 +1,5 @@
 var gl;
-var canvas
+var canvas;
 var direction = 1.0;
 
 var theta = 0.0

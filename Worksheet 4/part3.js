@@ -13,8 +13,9 @@ var index = 0;
 var pointsArray = [];
 var normalsArray = [];
 
-var lightPosition = vec4(0.0, 0.0, 1.0, 0.0);
-var diffuseProduct = vec4(1.0, 1.0, 1.0, 1.0);
+var lightPosition = vec4(0.0, 0.0, -1.0, 0.0);
+var lightDiffuse = vec4(1.0, 1.0, 1.0, 1.0);
+var materialDiffuse = vec4(1.0, 0.8, 0.0, 1.0);
 
 var va = vec4(0.0, 0.0, 1.0, 1);
 var vb = vec4(0.0, 0.942809, -0.333333, 1);
@@ -134,6 +135,7 @@ window.onload = function init()
     };
 
     gl.uniform4fv(gl.getUniformLocation(program, "lightPosition"),flatten(lightPosition));
+    var diffuseProduct = mult(lightDiffuse, materialDiffuse);
     gl.uniform4fv(gl.getUniformLocation(program, "diffuseProduct"), flatten(diffuseProduct));
 
     render();

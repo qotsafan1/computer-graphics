@@ -1,5 +1,6 @@
-var canvas;
 var gl;
+var canvas;
+
 var modelViewMatrixLoc;
 var projectionMatrixLoc;
 var normalMatrixLoc;
@@ -13,9 +14,20 @@ var index = 0;
 var pointsArray = [];
 var normalsArray = [];
 
-var lightPosition = vec4(0.0, 0.0, 1.0, 0.0 );
-var lightEmission = vec4(1.0, 1.0, 1.0, 1.0 );
-var ambientProduct, diffuseProduct, specularProduct, shininess;
+var lightPosition = vec4(0.0, 0.0, -1.0, 0.0);
+var lightEmission = vec4(1.0, 1.0, 1.0, 1.0);
+var lightAmbient = lightEmission;
+var lightDiffuse = lightEmission;
+var lightSpecular = lightEmission;
+
+var materialAmbientFirst = vec4(1.0, 0.0, 1.0, 1.0);
+var materialDiffuseFirst = vec4(1.0, 0.8, 0.0, 1.0);
+var materialSpecularFirst = vec4(1.0, 1.0, 1.0, 1.0);
+var materialShininess = 20.0;
+
+var materialAmbient, materialDiffuse, materialSpecular;
+
+var ambientProduct, diffuseProduct, specularProduct;
 
 var va = vec4(0.0, 0.0, 1.0, 1);
 var vb = vec4(0.0, 0.942809, -0.333333, 1);
@@ -37,18 +49,18 @@ function triangle(a, b, c) {
 }
 
 function divideTriangle(a, b, c, count) {
-    if ( count > 0 ) {
-        var ab = normalize(mix( a, b, 0.5), true);
-        var ac = normalize(mix( a, c, 0.5), true);
-        var bc = normalize(mix( b, c, 0.5), true);
+    if (count > 0) {
+        var ab = normalize(mix(a, b, 0.5), true);
+        var ac = normalize(mix(a, c, 0.5), true);
+        var bc = normalize(mix(b, c, 0.5), true);
 
-        divideTriangle( a, ab, ac, count - 1 );
-        divideTriangle( ab, b, bc, count - 1 );
-        divideTriangle( bc, c, ac, count - 1 );
-        divideTriangle( ab, bc, ac, count - 1 );
+        divideTriangle(a, ab, ac, count - 1);
+        divideTriangle(ab, b, bc, count - 1);
+        divideTriangle(bc, c, ac, count - 1);
+        divideTriangle(ab, bc, ac, count - 1);
     }
     else {
-        triangle( a, b, c );
+        triangle(a, b, c);
     }
 }
 
@@ -62,44 +74,44 @@ function tetrahedron(a, b, c, d, n) {
 
 window.onload = function init()
 {
-    canvas = document.getElementById( "webgl" );
+    canvas = document.getElementById("webgl");
 
-    gl = WebGLUtils.setupWebGL( canvas );
-    if ( !gl ) {
-        alert( "WebGL isn't available" );
+    gl = WebGLUtils.setupWebGL(canvas);
+    if (!gl) {
+        alert("WebGL isn't available");
     }
 
     tetrahedron(va, vb, vc, vd, numTimesToSubdivide);
 
-    gl.viewport( 0, 0, canvas.width, canvas.height );
+    gl.viewport(0, 0, canvas.width, canvas.height);
     gl.clearColor(0.3921, 0.5843, 0.9294, 1.0);
 
     gl.enable(gl.DEPTH_TEST);
     gl.enable(gl.CULL_FACE);
     //gl.cullFace(gl.FRONT);
 
-    var program = initShaders( gl, "vertex-shader", "fragment-shader" );
-    gl.useProgram( program );
+    var program = initShaders(gl, "vertex-shader", "fragment-shader");
+    gl.useProgram(program);
 
     projectionMatrixLoc = gl.getUniformLocation(program, "projectionMatrix");
     modelViewMatrixLoc = gl.getUniformLocation(program, "modelViewMatrix");
-    normalMatrixLoc = gl.getUniformLocation( program, "normalMatrix" );
+    normalMatrixLoc = gl.getUniformLocation(program, "normalMatrix");
 
     var nBuffer = gl.createBuffer();
-    gl.bindBuffer( gl.ARRAY_BUFFER, nBuffer);
-    gl.bufferData( gl.ARRAY_BUFFER, flatten(normalsArray), gl.STATIC_DRAW );
+    gl.bindBuffer(gl.ARRAY_BUFFER, nBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, flatten(normalsArray), gl.STATIC_DRAW);
 
-    var vNormal = gl.getAttribLocation( program, "vNormal" );
-    gl.vertexAttribPointer( vNormal, 4, gl.FLOAT, false, 0, 0 );
-    gl.enableVertexAttribArray( vNormal);
+    var vNormal = gl.getAttribLocation(program, "vNormal");
+    gl.vertexAttribPointer(vNormal, 4, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(vNormal);
 
     var vBuffer = gl.createBuffer();
-    gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer );
-    gl.bufferData( gl.ARRAY_BUFFER, flatten(pointsArray), gl.STATIC_DRAW );
+    gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, flatten(pointsArray), gl.STATIC_DRAW);
 
-    var vPosition = gl.getAttribLocation( program, "vPosition" );
-    gl.vertexAttribPointer( vPosition, 4, gl.FLOAT, false, 0, 0 );
-    gl.enableVertexAttribArray( vPosition );
+    var vPosition = gl.getAttribLocation(program, "vPosition");
+    gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(vPosition);
 
     var colorArray = [];
     for (var i = 0; i < pointsArray.length; i++) {
@@ -108,31 +120,31 @@ window.onload = function init()
           pointsArray[i][1]*0.5+0.5,
           pointsArray[i][2]*0.5+0.5,
           1.0
-        ));
+      ));
     }
 
     var colorBuffer = gl.createBuffer();
-    gl.bindBuffer( gl.ARRAY_BUFFER, colorBuffer );
-    gl.bufferData( gl.ARRAY_BUFFER, flatten(colorArray), gl.STATIC_DRAW );
+    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, flatten(colorArray), gl.STATIC_DRAW);
 
-    var vColor = gl.getAttribLocation( program, "vColor" );
-    gl.vertexAttribPointer( vColor, 4, gl.FLOAT, false, 0, 0 );
-    gl.enableVertexAttribArray( vColor );
+    var vColor = gl.getAttribLocation(program, "vColor");
+    gl.vertexAttribPointer(vColor, 4, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(vColor);
 
     gl.ambient =  gl.getUniformLocation(program, "ambientProduct");
     var ambientProductValue = document.getElementById("ambientProduct").valueAsNumber;
-    ambientProduct = vec4(ambientProductValue, ambientProductValue, ambientProductValue, 1.0);
+    materialAmbient = scale(ambientProductValue, materialAmbientFirst);
 
     gl.diffuse = gl.getUniformLocation(program, "diffuseProduct");
     var diffuseProductValue = document.getElementById("diffuseProduct").valueAsNumber;
-    diffuseProduct = vec4(diffuseProductValue, diffuseProductValue, diffuseProductValue, 1.0);
+    materialDiffuse = scale(diffuseProductValue, materialDiffuseFirst);
 
     gl.specular = gl.getUniformLocation(program, "specularProduct");
     var specularProductValue = document.getElementById("specularProduct").valueAsNumber;
-    specularProduct = vec4(specularProductValue, specularProductValue, specularProductValue, 1.0);
+    materialSpecular = scale(specularProductValue, materialSpecularFirst);
 
     gl.shininess = gl.getUniformLocation(program, "shininess");
-    shininess = document.getElementById("shininess").valueAsNumber;
+    materialShininess = document.getElementById("shininess").valueAsNumber;
 
     gl.lightEmission = gl.getUniformLocation(program, "lightEmission");
     var lightEmissionValue = document.getElementById("lightEmission").valueAsNumber;
@@ -157,41 +169,44 @@ window.onload = function init()
 
     document.getElementById("ambientProduct").oninput = function (event) {
         var ambientProductValue = event.target.valueAsNumber;
-        ambientProduct = vec4(ambientProductValue, ambientProductValue, ambientProductValue, 1.0);
+        materialAmbient = scale(ambientProductValue, materialAmbientFirst);
         calculateLight();
     };
 
     document.getElementById("diffuseProduct").oninput = function (event) {
         var diffuseProductValue = event.target.valueAsNumber;
-        diffuseProduct = vec4(diffuseProductValue, diffuseProductValue, diffuseProductValue, 1.0);
+        materialDiffuse = scale(diffuseProductValue, materialDiffuseFirst);
         calculateLight();
     };
 
     document.getElementById("specularProduct").oninput = function (event) {
         var specularProductValue = event.target.valueAsNumber;
-        specularProduct = vec4(specularProductValue, specularProductValue, specularProductValue, 1.0);
+        materialSpecular = scale(specularProductValue, materialSpecularFirst);
         calculateLight();
     };
 
     document.getElementById("shininess").oninput = function (event) {
-        shininess = event.target.valueAsNumber;
+        materialShininess = event.target.valueAsNumber;
         calculateLight();
     };
 
     document.getElementById("lightEmission").oninput = function (event) {
         var lightEmissionValue = document.getElementById("lightEmission").valueAsNumber;
         lightEmission = vec4(lightEmissionValue, lightEmissionValue, lightEmissionValue, 1.0);
+        lightAmbient = lightEmission;
+        lightDiffuse = lightEmission;
+        lightSpecular = lightEmission;
         calculateLight();
     };
 
-    gl.uniform4fv( gl.getUniformLocation(program, "lightPosition"),flatten(lightPosition));
+    gl.uniform4fv(gl.getUniformLocation(program, "lightPosition"),flatten(lightPosition));
 
     render();
 }
 
 function render()
 {
-    gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     var aspect = canvas.width/canvas.height;
 
@@ -205,30 +220,30 @@ function render()
 
     eye = vec3(radius * Math.sin(rotation), 0.0, radius * Math.cos(rotation));
 
-    var modelViewMatrix = lookAt( eye, at, up ) ;
+    var modelViewMatrix = lookAt(eye, at, up) ;
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
 
     normMatrix = normalMatrix(modelViewMatrix, true);
     gl.uniformMatrix3fv(normalMatrixLoc, false, flatten(normMatrix));
 
-    for( var i=0; i<index; i+=3) {
-        gl.drawArrays( gl.TRIANGLES, i, 3 );
+    for(var i=0; i<index; i+=3) {
+        gl.drawArrays(gl.TRIANGLES, i, 3);
     }
 
     window.requestAnimFrame(render);
 }
 
 function calculateLight() {
-    var ambient = mult(lightEmission, ambientProduct);
-    gl.uniform4fv(gl.ambient, flatten(ambient));
+    ambientProduct = mult(lightAmbient, materialAmbient);
+    gl.uniform4fv(gl.ambient, flatten(ambientProduct));
 
-    var diffuse = mult(lightEmission, flatten(diffuseProduct));
-    gl.uniform4fv(gl.diffuse, diffuse);
+    diffuseProduct = mult(lightDiffuse, materialDiffuse);
+    gl.uniform4fv(gl.diffuse, flatten(diffuseProduct));
 
-    var specular = mult(lightEmission, flatten(specularProduct));
-    gl.uniform4fv(gl.specular, specular);
+    specularProduct = mult(lightSpecular, materialSpecular);
+    gl.uniform4fv(gl.specular, flatten(specularProduct));
 
-    gl.uniform1f(gl.shininess, shininess);
+    gl.uniform1f(gl.shininess, materialShininess);
 
     gl.uniform4fv(gl.lightEmission, flatten(lightEmission));
 }
